@@ -4,14 +4,14 @@ services:
 
   #  start Postgres, and ensure that data is stored to a mounted volume
   postgres:
-    image: 'postgres:14.2'
+    image: 'postgres:14.3'
     ports:
       - "5432:5432"
     restart: always
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: blbcsby
-      POSTGRES_DB: vueapi
+      POSTGRES_DB: vue-api
     volumes:
       - ./db-data/postgres/:/var/lib/postgresql/data/
 
