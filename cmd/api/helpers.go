@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"errors"
 	"io"
-	"log"
 	"net/http"
 	"strings"
 )
@@ -31,8 +30,6 @@ func (app *application) readJSON(w http.ResponseWriter, r *http.Request, data in
 // writeJSON takes a response status code and arbitrary data and writes a json response to the client
 func (app *application) writeJSON(w http.ResponseWriter, status int, data interface{}, headers ...http.Header) error {
 	var output []byte
-	log.Println(app.environment + "abc")
-	log.Println("development" + "abc")
 
 	if app.environment == "development" {
 		out, err := json.MarshalIndent(data, "", "\t")
