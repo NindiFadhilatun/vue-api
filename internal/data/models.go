@@ -62,7 +62,7 @@ func (u *User) GetAll() ([]*User, error) {
 		when (select count(*) from tokens t where user_id = users.id and t.expiry > NOW()) > 0 then 1
 		else 0
 	end as has_token
-	from users order by last_name`
+	from users order by first_name`
 
 	rows, err := db.QueryContext(ctx, query)
 	if err != nil {
