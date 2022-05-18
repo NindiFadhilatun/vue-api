@@ -1,4 +1,6 @@
 /.idea/
 /.vscode/
-/db-data/postgres/
+/db-data/
 /vueapi.exe
+/go.mod
+/go.sum
