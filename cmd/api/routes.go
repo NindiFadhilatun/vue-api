@@ -14,6 +14,7 @@ import (
 func (app *application) routes() http.Handler {
 	mux := chi.NewRouter()
 	mux.Use(middleware.Recoverer)
+	//goland:noinspection HttpUrlsUsage
 	mux.Use(cors.Handler(cors.Options{
 		AllowedOrigins:   []string{"https://*", "http://*"},
 		AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
@@ -40,6 +41,12 @@ func (app *application) routes() http.Handler {
 		mux.Post("/users/get/{id}", app.GetUser)
 		mux.Post("/users/delete", app.DeleteUser)
 		mux.Post("/log-user-out/{id}", app.LogUserOutAndSetInactive)
+
+		// admin book routes
+		mux.Post("/authors/all", app.AuthorsAll)
+		mux.Post("/books/save", app.EditBook)
+		mux.Post("/books/delete", app.DeleteBook)
+		mux.Post("/books/{id}", app.BookByID)
 	})
 
 	// static files

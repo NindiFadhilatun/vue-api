@@ -1,13 +1,19 @@
 package main
 
 import (
+	"encoding/base64"
 	"errors"
+	"fmt"
 	"github.com/go-chi/chi/v5"
+	"github.com/mozillazg/go-slugify"
 	"net/http"
+	"os"
 	"strconv"
 	"time"
 	"vue-api/internal/data"
 )
+
+var staticPath = "./static/"
 
 // jsonResponse is the type used for generic JSON responses
 type jsonResponse struct {
@@ -88,7 +94,8 @@ func (app *application) Login(w http.ResponseWriter, r *http.Request) {
 
 	err = app.writeJSON(w, http.StatusOK, payload)
 	if err != nil {
-		app.errorLog.Println(err)
+		app.errorJSON(w, err)
+		return
 	}
 }
 
@@ -137,7 +144,7 @@ func (app *application) AllUsers(w http.ResponseWriter, _ *http.Request) {
 
 	err = app.writeJSON(w, http.StatusOK, payload)
 	if err != nil {
-		app.errorLog.Println(err)
+		app.errorJSON(w, err)
 		return
 	}
 }
@@ -313,7 +320,7 @@ func (app *application) AllBooks(w http.ResponseWriter, _ *http.Request) {
 
 	err = app.writeJSON(w, http.StatusOK, payload)
 	if err != nil {
-		app.errorLog.Println(err)
+		app.errorJSON(w, err)
 		return
 	}
 }
@@ -337,4 +344,164 @@ func (app *application) OneBook(w http.ResponseWriter, r *http.Request) {
 		app.errorJSON(w, err)
 		return
 	}
+}
+
+func (app *application) AuthorsAll(w http.ResponseWriter, _ *http.Request) {
+	authors, err := app.models.Author.All()
+	if err != nil {
+		app.errorJSON(w, err)
+		return
+	}
+
+	type selectData struct {
+		Value int    `json:"value"`
+		Text  string `json:"text"`
+	}
+
+	var results []selectData
+
+	for _, authorSlice := range authors {
+		author := selectData{
+			Value: authorSlice.ID,
+			Text:  authorSlice.AuthorName,
+		}
+
+		results = append(results, author)
+	}
+
+	payload := jsonResponse{
+		Error: false,
+		Data:  results,
+	}
+
+	err = app.writeJSON(w, http.StatusOK, payload)
+	if err != nil {
+		app.errorJSON(w, err)
+		return
+	}
+}
+
+func (app *application) EditBook(w http.ResponseWriter, r *http.Request) {
+	var requestPayload struct {
+		ID              int    `json:"id"`
+		Title           string `json:"title"`
+		AuthorID        int    `json:"author_id"`
+		PublicationYear int    `json:"publication_year"`
+		Description     string `json:"description"`
+		CoverBase64     string `json:"cover"`
+		GenreIDs        []int  `json:"genre_ids"`
+	}
+
+	err := app.readJSON(w, r, &requestPayload)
+	if err != nil {
+		app.errorJSON(w, err)
+		return
+	}
+
+	book := data.Book{
+		ID:              requestPayload.ID,
+		Title:           requestPayload.Title,
+		AuthorID:        requestPayload.AuthorID,
+		PublicationYear: requestPayload.PublicationYear,
+		Description:     requestPayload.Description,
+		Slug:            slugify.Slugify(requestPayload.Title),
+		GenreIDs:        requestPayload.GenreIDs,
+	}
+
+	if len(requestPayload.CoverBase64) > 0 {
+		// we have a cover
+		decoded, err := base64.StdEncoding.DecodeString(requestPayload.CoverBase64)
+		if err != nil {
+			app.errorJSON(w, err)
+			return
+		}
+
+		// write image to /static/covers
+		if err := os.WriteFile(fmt.Sprintf("%s/covers/%s.jpg", staticPath, book.Slug), decoded, 0666); err != nil {
+			app.errorJSON(w, err)
+			return
+		}
+	}
+
+	if book.ID == 0 {
+		// adding a book
+		_, err := app.models.Book.Insert(book)
+		if err != nil {
+			app.errorJSON(w, err)
+			return
+		}
+	} else {
+		// updating a book
+		err := book.Update()
+		if err != nil {
+			app.errorJSON(w, err)
+			return
+		}
+	}
+
+	payload := jsonResponse{
+		Error:   false,
+		Message: "Changes saved",
+	}
+
+	err = app.writeJSON(w, http.StatusAccepted, payload)
+	if err != nil {
+		app.errorJSON(w, err)
+		return
+	}
+}
+
+func (app *application) BookByID(w http.ResponseWriter, r *http.Request) {
+	bookID, err := strconv.Atoi(chi.URLParam(r, "id"))
+	if err != nil {
+		app.errorJSON(w, err)
+		return
+	}
+
+	book, err := app.models.Book.GetOneById(bookID)
+	if err != nil {
+		app.errorJSON(w, err)
+		return
+	}
+
+	payload := jsonResponse{
+		Error: false,
+		Data:  book,
+	}
+
+	err = app.writeJSON(w, http.StatusOK, payload)
+	if err != nil {
+		app.errorJSON(w, err)
+		return
+	}
+}
+
+func (app *application) DeleteBook(w http.ResponseWriter, r *http.Request) {
+	var requestPayload struct {
+		ID int `json:"id"`
+	}
+
+	err := app.readJSON(w, r, &requestPayload)
+	if err != nil {
+		app.errorJSON(w, err)
+		return
+	}
+
+	err = app.models.Book.DeleteByID(requestPayload.ID)
+	if err != nil {
+		app.errorJSON(w, err)
+		return
+	}
+
+	payload := jsonResponse{
+		Error:   false,
+		Message: "Book deleted",
+	}
+
+	err = app.writeJSON(w, http.StatusOK, payload)
+	if err != nil {
+		app.errorJSON(w, err)
+		return
+	}
+
 }
