@@ -7,6 +7,7 @@ require (
 	github.com/go-chi/cors v1.2.1
 	github.com/jackc/pgconn v1.12.1
 	github.com/jackc/pgx/v4 v4.16.1
+	github.com/mozillazg/go-slugify v0.2.0
 	golang.org/x/crypto v0.0.0-20220518034528-6f7dac969898
 )
 
@@ -17,5 +18,6 @@ require (
 	github.com/jackc/pgproto3/v2 v2.3.0 // indirect
 	github.com/jackc/pgservicefile v0.0.0-20200714003250-2b9c44734f2b // indirect
 	github.com/jackc/pgtype v1.11.0 // indirect
+	github.com/mozillazg/go-unidecode v0.1.1 // indirect
 	golang.org/x/text v0.3.7 // indirect
 )
