@@ -298,7 +298,7 @@ func (app *application) ValidateToken(w http.ResponseWriter, r *http.Request) {
 	_ = app.writeJSON(w, http.StatusOK, payload)
 }
 
-func (app *application) AllBooks(w http.ResponseWriter, r *http.Request) {
+func (app *application) AllBooks(w http.ResponseWriter, _ *http.Request) {
 	books, err := app.models.Book.GetAll()
 	if err != nil {
 		app.errorJSON(w, err)
@@ -314,6 +314,27 @@ func (app *application) AllBooks(w http.ResponseWriter, r *http.Request) {
 	err = app.writeJSON(w, http.StatusOK, payload)
 	if err != nil {
 		app.errorLog.Println(err)
+		return
+	}
+}
+
+func (app *application) OneBook(w http.ResponseWriter, r *http.Request) {
+	slug := chi.URLParam(r, "slug")
+
+	book, err := app.models.Book.GetOneBySlug(slug)
+	if err != nil {
+		app.errorJSON(w, err)
+		return
+	}
+
+	payload := jsonResponse{
+		Error: false,
+		Data:  book,
+	}
+
+	err = app.writeJSON(w, http.StatusOK, payload)
+	if err != nil {
+		app.errorJSON(w, err)
 		return
 	}
 }
