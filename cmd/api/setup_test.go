@@ -10,12 +10,12 @@ import (
 	"github.com/DATA-DOG/go-sqlmock"
 )
 
-var _ application
-var _ sqlmock.Sqlmock
+var testApp application
+var mockedDB sqlmock.Sqlmock
 
 func TestMain(m *testing.M) {
 	testDB, myMock, _ := sqlmock.New()
-	_ = myMock
+	mockedDB = myMock
 
 	defer func(testDB *sql.DB) {
 		err := testDB.Close()
