@@ -1,6 +1,7 @@
 package main
 
 import (
+	"database/sql"
 	"fmt"
 	"log"
 	"net/http"
@@ -28,7 +29,7 @@ type application struct {
 // main is the main entry point for our application
 func main() {
 	var cfg config
-	cfg.port = 8081
+	cfg.port = 8082
 
 	infoLog := log.New(os.Stdout, "INFO\t", log.Ldate|log.Ltime)
 	errorLog := log.New(os.Stdout, "ERROR\t", log.Ldate|log.Ltime|log.Lshortfile)
@@ -39,7 +40,12 @@ func main() {
 	if err != nil {
 		log.Fatal("Cannot connect to database")
 	}
-	defer db.SQL.Close()
+	defer func(SQL *sql.DB) {
+		err := SQL.Close()
+		if err != nil {
+			log.Println(err)
+		}
+	}(db.SQL)
 
 	app := &application{
 		config:      cfg,

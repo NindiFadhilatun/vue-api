@@ -43,9 +43,6 @@ func (app *application) Login(w http.ResponseWriter, r *http.Request) {
 		_ = app.writeJSON(w, http.StatusBadRequest, payload)
 	}
 
-	// TODO authenticate
-	app.infoLog.Println(creds.UserName, creds.Password)
-
 	// look up the user by email
 	user, err := app.models.User.GetByEmail(creds.UserName)
 	if err != nil {
