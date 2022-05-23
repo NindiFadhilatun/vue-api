@@ -20,11 +20,11 @@ func TestMain(m *testing.M) {
 	defer func(testDB *sql.DB) {
 		err := testDB.Close()
 		if err != nil {
-			log.Println(err)
+			log.Fatal(err)
 		}
 	}(testDB)
 
-	_ = application{
+	testApp = application{
 		config:      config{},
 		infoLog:     log.New(os.Stdout, "INFO\t", log.Ldate|log.Ltime),
 		errorLog:    log.New(os.Stdout, "Error\t", log.Ldate|log.Ltime),

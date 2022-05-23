@@ -15,7 +15,7 @@ func TestApplication_AllUsers(t *testing.T) {
 	// tell mock what queries we expect
 	mockedDB.ExpectQuery("select \\\\* ").WillReturnRows(mockedRows)
 
-	// create a test recorder which satisfies the requirements for a ResponseRecorder
+	// create a test recorder which satisifies the requirements for a ResponseRecorder
 	rr := httptest.NewRecorder()
 	// create request
 	req, _ := http.NewRequest("POST", "/admin/users", nil)
